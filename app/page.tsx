@@ -25,6 +25,7 @@ function TypingNewsApp() {
 		country,
 		quota,
 		articleSource,
+		articleTitle,
 		apiKey,
 		setCategory,
 		setCountry,
@@ -197,7 +198,7 @@ function TypingNewsApp() {
 												</div>
 											) : (
 												<div className="h-full flex flex-col justify-between">
-													<TypingTest text={currentArticleText} />
+													<TypingTest text={currentArticleText} title={articleTitle} />
 													{articleSource && (
 														<p className="text-xs text-muted-foreground mt-3">
 															Source:{" "}

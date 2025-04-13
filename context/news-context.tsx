@@ -38,6 +38,7 @@ interface NewsContextState {
 	country: string;
 	quota: ApiQuota | null;
 	articleSource: string;
+	articleTitle: string;
 	hasMoreArticles: boolean;
 	apiKey: string | null;
 	showApiKeyModal: boolean;
@@ -160,17 +161,17 @@ export const NewsProvider: React.FC<{ children: React.ReactNode }> = ({ children
 				if (result.data && result.data.news && result.data.news.length > 0) {
 					// Process the articles
 					const newArticles = result.data.news.map((article: any) => {
-						// Combine title and text
-						let fullText = `${article.title}\n\n`;
+						// Keep the title separate and only include the text content for typing
+						let processedText = "";
 
 						if (article.text) {
 							// Remove any HTML tags
 							const cleanContent = article.text.replace(/<[^>]*>/g, "");
-							fullText += cleanContent;
+							processedText = cleanContent;
 						}
 
 						// Normalize newlines - replace multiple newlines with a single newline
-						const normalizedText = fullText.trim().replace(/\n{2,}/g, "\n");
+						const normalizedText = processedText.trim().replace(/\n{2,}/g, "\n");
 
 						return {
 							...article,
@@ -269,6 +270,9 @@ export const NewsProvider: React.FC<{ children: React.ReactNode }> = ({ children
 		fetchArticles(true);
 	}, [fetchArticles]);
 
+	// Get the current article title
+	const articleTitle = articlesByCategory[category]?.[currentArticleIndex]?.title || "";
+
 	// Update the context value
 	const value = {
 		articlesByCategory,
@@ -279,6 +283,7 @@ export const NewsProvider: React.FC<{ children: React.ReactNode }> = ({ children
 		country,
 		quota,
 		articleSource: articlesByCategory[category]?.[currentArticleIndex]?.url || "",
+		articleTitle,
 		hasMoreArticles,
 		apiKey,
 		showApiKeyModal,

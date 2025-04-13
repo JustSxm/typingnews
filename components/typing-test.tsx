@@ -11,6 +11,7 @@ import { motion } from "framer-motion";
 
 interface TypingTestProps {
 	text: string;
+	title?: string;
 }
 
 // Define state type
@@ -82,7 +83,7 @@ function typingReducer(state: TypingState, action: TypingAction): TypingState {
 // Global text variable to avoid passing it to the reducer
 let text = "";
 
-export default function TypingTest({ text: propText }: TypingTestProps) {
+export default function TypingTest({ text: propText, title }: TypingTestProps) {
 	// Set the global text variable
 	text = propText;
 
@@ -439,14 +440,15 @@ export default function TypingTest({ text: propText }: TypingTestProps) {
 	return (
 		<div className="grid grid-cols-1 gap-3">
 			{/* Text display and input in the first row */}
-			<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-				{/* Text display */}
-				<div ref={textDisplayRef} className="relative bg-muted p-3 rounded-md h-80 overflow-y-auto text-display">
-					<div className="text-base leading-relaxed font-mono">{renderedText}</div>
-				</div>
+			<div className="space-y-2">
+				{title && <h3 className="font-bold text-lg">{title}</h3>}
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+					{/* Text display */}
+					<div ref={textDisplayRef} className="relative bg-muted p-3 rounded-md h-80 overflow-y-auto text-display">
+						<div className="text-base leading-relaxed font-mono">{renderedText}</div>
+					</div>
 
-				{/* Input area */}
-				<div className="flex flex-col">
+					{/* Input area */}
 					<textarea
 						ref={inputRef}
 						value={input}
