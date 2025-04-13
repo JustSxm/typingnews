@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TypingTest from "@/components/typing-test";
 import StreakCounter from "@/components/streak-counter";
@@ -100,8 +100,8 @@ function TypingNewsApp() {
 	const currentArticleText = articlesByCategory[category]?.[currentArticleIndex]?.text || "";
 
 	return (
-		<main className="h-screen flex flex-col">
-			<div className="px-3 py-4 flex-grow flex flex-col">
+		<main className="min-h-screen flex flex-col">
+			<div className="px-3 py-4 flex-grow flex flex-col h-full">
 				<div className="flex sm:flex-row justify-between items-center mb-4 gap-2">
 					<h1 className="text-2xl font-bold">News Typing Practice</h1>
 					<ThemeToggle />
@@ -110,7 +110,7 @@ function TypingNewsApp() {
 				<p className="text-center text-muted-foreground mb-4">Improve your typing skills with real news articles</p>
 
 				{/* Tabs moved above all columns */}
-				<Tabs defaultValue="top" value={category} onValueChange={handleCategoryChange} className="flex-grow flex flex-col">
+				<Tabs defaultValue="top" value={category} onValueChange={handleCategoryChange} className="flex-grow flex flex-col h-full">
 					<div className="flex justify-center mb-4 overflow-x-auto">
 						<TabsList className="grid grid-cols-3 md:grid-cols-6">
 							{categories.map((cat) => (
@@ -131,52 +131,52 @@ function TypingNewsApp() {
 					)}
 
 					{/* Tab content with three columns */}
-					{categories.map((cat) => (
-						<TabsContent key={cat} value={cat} className="mt-0 flex-grow">
-							<div className="flex-grow flex flex-col lg:flex-row gap-4">
-								{/* Left Panel */}
-								<div className="w-full lg:w-1/5 flex flex-grow">
-									<div className="bg-card rounded-lg border shadow-sm p-4 w-full">
-										<h2 className="text-lg font-semibold mb-4">Settings</h2>
+					<TabsContent value={category} className="mt-0 flex-grow flex flex-col">
+						<div className="flex-grow flex flex-col lg:flex-row gap-4 h-full">
+							{/* Left Panel */}
+							<div className="w-full lg:w-1/5 flex">
+								<div className="bg-card rounded-lg border shadow-sm p-4 w-full flex flex-col">
+									<h2 className="text-lg font-semibold mb-4">Settings</h2>
 
-										<div className="space-y-4">
+									<div className="space-y-4 flex-grow">
+										<div className="space-y-2">
+											<span className="text-sm font-medium">Country :</span>
+											<CountrySelector value={country} onChange={handleCountryChange} />
+										</div>
+
+										{apiKey && (
 											<div className="space-y-2">
-												<span className="text-sm font-medium">Country :</span>
-												<CountrySelector value={country} onChange={handleCountryChange} />
+												<div className="flex justify-between items-center">
+													<span className="text-sm font-medium">API Key:</span>
+													<Button variant="ghost" size="sm" onClick={resetApiKey} className="h-6 px-2">
+														<Key className="h-3 w-3 mr-1" />
+														Change
+													</Button>
+												</div>
+												<div className="text-xs text-muted-foreground">
+													{apiKey.substring(0, 4)}...{apiKey.substring(apiKey.length - 4)}
+												</div>
 											</div>
+										)}
 
-											{apiKey && (
-												<div className="space-y-2">
-													<div className="flex justify-between items-center">
-														<span className="text-sm font-medium">API Key:</span>
-														<Button variant="ghost" size="sm" onClick={resetApiKey} className="h-6 px-2">
-															<Key className="h-3 w-3 mr-1" />
-															Change
-														</Button>
-													</div>
-													<div className="text-xs text-muted-foreground">
-														{apiKey.substring(0, 4)}...{apiKey.substring(apiKey.length - 4)}
-													</div>
+										{quota && (
+											<div className="text-sm space-y-2">
+												<div className="flex justify-between">
+													<span className="font-medium">API Quota:</span>
+													<span>
+														{quota.used}/{quota.used + quota.left}
+													</span>
 												</div>
-											)}
-
-											{quota && (
-												<div className="text-sm space-y-2">
-													<div className="flex justify-between">
-														<span className="font-medium">API Quota:</span>
-														<span>
-															{quota.used}/{quota.used + quota.left}
-														</span>
-													</div>
-													<div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2.5 overflow-hidden">
-														<div
-															className="bg-blue-500 h-2.5 rounded-full"
-															style={{ width: `${Math.round((quota.used / (quota.used + quota.left)) * 100)}%` }}
-														></div>
-													</div>
+												<div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2.5 overflow-hidden">
+													<div
+														className="bg-blue-500 h-2.5 rounded-full"
+														style={{ width: `${Math.round((quota.used / (quota.used + quota.left)) * 100)}%` }}
+													></div>
 												</div>
-											)}
+											</div>
+										)}
 
+										<div className="mt-auto pt-4">
 											<div className="flex gap-2">
 												<Button onClick={getNextArticle} className="w-full" disabled={loading || (quota && quota.left <= 0)}>
 													{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
@@ -190,71 +190,73 @@ function TypingNewsApp() {
 										</div>
 									</div>
 								</div>
+							</div>
 
-								{/* Main Content */}
-								<div className="w-full lg:w-3/5 flex flex-col flex-grow">
-									<Card className="h-full">
-										<CardContent className="pt-4">
-											{loading && articlesByCategory[category]?.length === 0 ? (
-												<div className="flex justify-center items-center h-32">
-													<Loader2 className="h-8 w-8 animate-spin text-primary" />
-												</div>
-											) : (
-												<div className="h-full flex flex-col justify-between">
-													<TypingTest text={currentArticleText} title={articleTitle} />
-													{articleSource && (
-														<p className="text-xs text-muted-foreground mt-3">
-															Source:{" "}
-															<a href={articleSource} target="_blank" rel="noopener noreferrer" className="underline">
-																{articleSource}
-															</a>
-														</p>
-													)}
-												</div>
-											)}
-										</CardContent>
-									</Card>
-								</div>
+							{/* Main Content */}
+							<div className="w-full lg:w-3/5 flex">
+								<Card className="w-full flex flex-col">
+									<CardContent className="pt-4 flex-grow">
+										{loading && articlesByCategory[category]?.length === 0 ? (
+											<div className="flex justify-center items-center h-32 flex-grow">
+												<Loader2 className="h-8 w-8 animate-spin text-primary" />
+											</div>
+										) : (
+											<div className="flex-grow flex flex-col">
+												<TypingTest text={currentArticleText} title={articleTitle} />
+											</div>
+										)}
+									</CardContent>
+									<CardFooter className="pt-0 pb-4 border-t">
+										{articleSource && (
+											<p className="text-xs text-muted-foreground">
+												Source:{" "}
+												<a href={articleSource} target="_blank" rel="noopener noreferrer" className="underline">
+													{articleSource}
+												</a>
+											</p>
+										)}
+									</CardFooter>
+								</Card>
+							</div>
 
-								{/* Right Panel */}
-								<div className="w-full lg:w-1/5 flex flex-grow">
-									<div className="bg-card rounded-lg border shadow-sm p-4 w-full">
-										<h2 className="text-lg font-semibold mb-4">Stats</h2>
+							{/* Right Panel */}
+							<div className="w-full lg:w-1/5 flex">
+								<div className="bg-card rounded-lg border shadow-sm p-4 w-full flex flex-col">
+									<h2 className="text-lg font-semibold mb-4">Stats</h2>
 
-										<div className="space-y-4">
-											<div className="flex justify-center mb-2">
-												<StreakCounter streak={streak} animated={streakUpdated} />
+									<div className="space-y-4 flex-grow flex flex-col">
+										<div className="flex justify-center mb-2">
+											<StreakCounter streak={streak} animated={streakUpdated} />
+										</div>
+
+										<div className="space-y-2">
+											<div className="flex justify-between">
+												<span className="text-sm font-medium">Last Visit:</span>
+												<span className="text-sm">{lastVisit ? new Date(lastVisit).toLocaleDateString() : "Never"}</span>
 											</div>
 
-											<div className="space-y-2">
-												<div className="flex justify-between">
-													<span className="text-sm font-medium">Last Visit:</span>
-													<span className="text-sm">{lastVisit ? new Date(lastVisit).toLocaleDateString() : "Never"}</span>
-												</div>
+											<div className="flex justify-between">
+												<span className="text-sm font-medium">Current Category:</span>
+												<span className="text-sm capitalize">{category}</span>
+											</div>
 
-												<div className="flex justify-between">
-													<span className="text-sm font-medium">Current Category:</span>
-													<span className="text-sm capitalize">{category}</span>
-												</div>
+											<div className="flex justify-between">
+												<span className="text-sm font-medium">Articles Available:</span>
+												<span className="text-sm">{articlesByCategory[category]?.length || 0}</span>
+											</div>
 
-												<div className="flex justify-between">
-													<span className="text-sm font-medium">Articles Available:</span>
-													<span className="text-sm">{articlesByCategory[category]?.length || 0}</span>
-												</div>
-
-												<div className="flex justify-between">
-													<span className="text-sm font-medium">Current Article:</span>
-													<span className="text-sm">
-														{currentArticleIndex + 1} of {articlesByCategory[category]?.length || 0}
-													</span>
-												</div>
+											<div className="flex justify-between">
+												<span className="text-sm font-medium">Current Article:</span>
+												<span className="text-sm">
+													{currentArticleIndex + 1} of {articlesByCategory[category]?.length || 0}
+												</span>
 											</div>
 										</div>
 									</div>
 								</div>
 							</div>
-						</TabsContent>
-					))}
+						</div>
+					</TabsContent>
 				</Tabs>
 			</div>
 		</main>

@@ -438,13 +438,13 @@ export default function TypingTest({ text: propText, title }: TypingTestProps) {
 	};
 
 	return (
-		<div className="grid grid-cols-1 gap-3">
+		<div className="grid grid-cols-1 gap-3 flex-grow flex flex-col">
 			{/* Text display and input in the first row */}
-			<div className="space-y-2">
+			<div className="space-y-2 flex-grow flex flex-col">
 				{title && <h3 className="font-bold text-lg">{title}</h3>}
-				<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+				<div className="grid grid-cols-1 md:grid-cols-2 gap-3 flex-grow">
 					{/* Text display */}
-					<div ref={textDisplayRef} className="relative bg-muted p-3 rounded-md h-80 overflow-y-auto text-display">
+					<div ref={textDisplayRef} className="relative bg-muted p-3 rounded-md h-[calc(100%-2rem)] min-h-[300px] overflow-y-auto text-display">
 						<div className="text-base leading-relaxed font-mono">{renderedText}</div>
 					</div>
 
@@ -454,7 +454,7 @@ export default function TypingTest({ text: propText, title }: TypingTestProps) {
 						value={input}
 						onKeyDown={handleKeyDown}
 						disabled={isFinished}
-						className="w-full h-80 p-3 border rounded-md font-mono resize-none focus:outline-none focus:ring-2 focus:ring-primary"
+						className="w-full h-[calc(100%-2rem)] min-h-[300px] p-3 border rounded-md font-mono resize-none focus:outline-none focus:ring-2 focus:ring-primary"
 						placeholder="Start typing here..."
 						readOnly
 					/>
@@ -494,7 +494,7 @@ export default function TypingTest({ text: propText, title }: TypingTestProps) {
 			</div>
 
 			{/* Keyboard visualizer in the third row */}
-			<div className="mt-20">
+			<div className="mt-4">
 				<KeyboardVisualizer currentChar={currentChar} isError={currentError} pressedKey={lastPressedKey} animationKey={animationKey} />
 			</div>
 
