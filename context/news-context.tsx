@@ -2,6 +2,7 @@
 
 import type React from "react";
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { ApiKeyModal } from "@/components/api-key-modal";
 
 // Define the structure of a news article
 export interface NewsArticle {
@@ -38,6 +39,8 @@ interface NewsContextState {
 	quota: ApiQuota | null;
 	articleSource: string;
 	hasMoreArticles: boolean;
+	apiKey: string | null;
+	showApiKeyModal: boolean;
 }
 
 // Define the context actions
@@ -46,6 +49,8 @@ interface NewsContextActions {
 	setCountry: (country: string) => void;
 	getNextArticle: () => void;
 	refreshArticles: () => void;
+	setApiKey: (key: string | null) => void;
+	resetApiKey: () => void;
 }
 
 // Create the context
@@ -56,7 +61,6 @@ export const categories = ["top", "politics", "sports", "business", "technology"
 
 export const NewsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 	// State for articles and pagination
-	// In the NewsProvider component, replace the articles state with articlesByCategory
 	const [articlesByCategory, setArticlesByCategory] = useState<Record<string, NewsArticle[]>>({});
 	const [currentArticleIndex, setCurrentArticleIndex] = useState(0);
 	const [offset, setOffset] = useState(0);
@@ -69,10 +73,50 @@ export const NewsProvider: React.FC<{ children: React.ReactNode }> = ({ children
 	const [error, setError] = useState<string | null>(null);
 	const [quota, setQuota] = useState<ApiQuota | null>(null);
 
+	// API key state
+	const [apiKey, setApiKey] = useState<string | null>(null);
+	const [showApiKeyModal, setShowApiKeyModal] = useState(false);
+	const [apiKeyError, setApiKeyError] = useState<string | null>(null);
+
+	// Load API key from localStorage on initial render
+	useEffect(() => {
+		const storedApiKey = localStorage.getItem("worldNewsApiKey");
+		if (storedApiKey) {
+			setApiKey(storedApiKey);
+		} else {
+			setShowApiKeyModal(true);
+		}
+	}, []);
+
+	// Reset API key
+	const resetApiKey = useCallback(() => {
+		localStorage.removeItem("worldNewsApiKey");
+		setApiKey(null);
+		setShowApiKeyModal(true);
+		setApiKeyError(null);
+	}, []);
+
+	// Handle API key modal close
+	const handleApiKeyModalClose = useCallback((newApiKey?: string) => {
+		if (newApiKey) {
+			setApiKey(newApiKey);
+			setApiKeyError(null);
+			// Refresh articles with the new API key
+			setArticlesByCategory({});
+		}
+		setShowApiKeyModal(false);
+	}, []);
+
 	// Fetch articles from the API
-	// Replace the fetchArticles function with this updated version that caches by category
 	const fetchArticles = useCallback(
 		async (reset = false) => {
+			// If no API key, show the modal
+			if (!apiKey) {
+				setShowApiKeyModal(true);
+				setLoading(false);
+				return;
+			}
+
 			// If we're resetting, clear the articles for this category and reset the index
 			if (reset) {
 				setCurrentArticleIndex(0);
@@ -94,11 +138,18 @@ export const NewsProvider: React.FC<{ children: React.ReactNode }> = ({ children
 				// Add offset parameter for pagination (except for top news)
 				const currentOffset = reset ? 0 : articlesByCategory[category]?.length || 0;
 				const offsetParam = category !== "top" && !reset ? `&offset=${currentOffset}` : "";
-				const response = await fetch(`/api/news?category=${category}&country=${country}${offsetParam}`);
+				const response = await fetch(`/api/news?category=${category}&country=${country}${offsetParam}&apiKey=${apiKey}`);
 				const result = await response.json();
 
 				if (result.error) {
-					throw new Error(result.error);
+					// Check if the error is related to the API key
+					if (response.status === 401 || response.status === 403 || result.error.includes("API key")) {
+						setApiKeyError(result.error);
+						setShowApiKeyModal(true);
+						throw new Error(result.error);
+					} else {
+						throw new Error(result.error);
+					}
 				}
 
 				// Update quota information
@@ -158,7 +209,12 @@ export const NewsProvider: React.FC<{ children: React.ReactNode }> = ({ children
 				}
 			} catch (error) {
 				console.error("Error fetching news:", error);
-				setError("Failed to load news. Please try again.");
+
+				// Don't set error if it's an API key issue (modal will show instead)
+				if (!apiKeyError) {
+					setError("Failed to load news. Please try again.");
+				}
+
 				if (reset) {
 					setArticlesByCategory((prev) => ({
 						...prev,
@@ -177,18 +233,18 @@ export const NewsProvider: React.FC<{ children: React.ReactNode }> = ({ children
 				setLoading(false);
 			}
 		},
-		[category, country, articlesByCategory, quota]
+		[category, country, articlesByCategory, quota, apiKey, apiKeyError]
 	);
 
 	// Update the initial fetch effect to only fetch if we don't have articles for this category
 	useEffect(() => {
-		if (!articlesByCategory[category] || articlesByCategory[category].length === 0) {
+		if (apiKey && (!articlesByCategory[category] || articlesByCategory[category].length === 0)) {
 			fetchArticles(true);
-		} else {
+		} else if (apiKey) {
 			// Reset the current article index when changing categories
 			setCurrentArticleIndex(0);
 		}
-	}, [category, country]);
+	}, [category, country, apiKey, fetchArticles, articlesByCategory]);
 
 	// Update the getNextArticle function to work with the category-based cache
 	const getNextArticle = useCallback(() => {
@@ -213,7 +269,6 @@ export const NewsProvider: React.FC<{ children: React.ReactNode }> = ({ children
 		fetchArticles(true);
 	}, [fetchArticles]);
 
-	// Get the current article source
 	// Update the context value
 	const value = {
 		articlesByCategory,
@@ -225,13 +280,22 @@ export const NewsProvider: React.FC<{ children: React.ReactNode }> = ({ children
 		quota,
 		articleSource: articlesByCategory[category]?.[currentArticleIndex]?.url || "",
 		hasMoreArticles,
+		apiKey,
+		showApiKeyModal,
 		setCategory,
 		setCountry,
 		getNextArticle,
 		refreshArticles,
+		setApiKey,
+		resetApiKey,
 	};
 
-	return <NewsContext.Provider value={value}>{children}</NewsContext.Provider>;
+	return (
+		<NewsContext.Provider value={value}>
+			{children}
+			<ApiKeyModal isOpen={showApiKeyModal} onClose={handleApiKeyModalClose} error={apiKeyError} />
+		</NewsContext.Provider>
+	);
 };
 
 // Hook to use the news context

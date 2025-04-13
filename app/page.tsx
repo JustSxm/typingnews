@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TypingTest from "@/components/typing-test";
 import StreakCounter from "@/components/streak-counter";
-import { Loader2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle, Key } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { NewsProvider, useNews, categories } from "@/context/news-context";
 
@@ -16,8 +16,22 @@ import { CountrySelector } from "@/components/country-selector";
 
 // Streak counter component with localStorage persistence
 function TypingNewsApp() {
-	const { articlesByCategory, currentArticleIndex, loading, error, category, country, quota, articleSource, setCategory, setCountry, getNextArticle, refreshArticles } =
-		useNews();
+	const {
+		articlesByCategory,
+		currentArticleIndex,
+		loading,
+		error,
+		category,
+		country,
+		quota,
+		articleSource,
+		apiKey,
+		setCategory,
+		setCountry,
+		getNextArticle,
+		refreshArticles,
+		resetApiKey,
+	} = useNews();
 
 	const [streak, setStreak] = useState(0);
 	const [lastVisit, setLastVisit] = useState<string | null>(null);
@@ -105,6 +119,21 @@ function TypingNewsApp() {
 									<span className="text-sm font-medium">Country :</span>
 									<CountrySelector value={country} onChange={handleCountryChange} />
 								</div>
+
+								{apiKey && (
+									<div className="space-y-2">
+										<div className="flex justify-between items-center">
+											<span className="text-sm font-medium">API Key:</span>
+											<Button variant="ghost" size="sm" onClick={resetApiKey} className="h-6 px-2">
+												<Key className="h-3 w-3 mr-1" />
+												Change
+											</Button>
+										</div>
+										<div className="text-xs text-muted-foreground">
+											{apiKey.substring(0, 4)}...{apiKey.substring(apiKey.length - 4)}
+										</div>
+									</div>
+								)}
 
 								{quota && (
 									<div className="text-sm space-y-2">
