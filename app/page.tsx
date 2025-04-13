@@ -109,87 +109,90 @@ function TypingNewsApp() {
 
 				<p className="text-center text-muted-foreground mb-4">Improve your typing skills with real news articles</p>
 
-				<div className="flex-grow flex flex-col lg:flex-row gap-4">
-					{/* Left Panel */}
-					<div className="w-full lg:w-1/5 flex flex-grow">
-						<div className="bg-card rounded-lg border shadow-sm p-4 w-full">
-							<h2 className="text-lg font-semibold mb-4">Settings</h2>
-
-							<div className="space-y-4">
-								<div className="space-y-2">
-									<span className="text-sm font-medium">Country :</span>
-									<CountrySelector value={country} onChange={handleCountryChange} />
-								</div>
-
-								{apiKey && (
-									<div className="space-y-2">
-										<div className="flex justify-between items-center">
-											<span className="text-sm font-medium">API Key:</span>
-											<Button variant="ghost" size="sm" onClick={resetApiKey} className="h-6 px-2">
-												<Key className="h-3 w-3 mr-1" />
-												Change
-											</Button>
-										</div>
-										<div className="text-xs text-muted-foreground">
-											{apiKey.substring(0, 4)}...{apiKey.substring(apiKey.length - 4)}
-										</div>
-									</div>
-								)}
-
-								{quota && (
-									<div className="text-sm space-y-2">
-										<div className="flex justify-between">
-											<span className="font-medium">API Quota:</span>
-											<span>
-												{quota.used}/{quota.used + quota.left}
-											</span>
-										</div>
-										<div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2.5 overflow-hidden">
-											<div
-												className="bg-blue-500 h-2.5 rounded-full"
-												style={{ width: `${Math.round((quota.used / (quota.used + quota.left)) * 100)}%` }}
-											></div>
-										</div>
-									</div>
-								)}
-
-								<div className="flex gap-2">
-									<Button onClick={getNextArticle} className="w-full" disabled={loading || (quota && quota.left <= 0)}>
-										{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-										Next Article
-									</Button>
-									<Button onClick={refreshArticles} variant="outline" className="w-full" disabled={loading || (quota && quota.left <= 0)}>
-										{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-										Refresh Articles
-									</Button>
-								</div>
-							</div>
-						</div>
+				{/* Tabs moved above all columns */}
+				<Tabs defaultValue="top" value={category} onValueChange={handleCategoryChange} className="flex-grow flex flex-col">
+					<div className="flex justify-center mb-4 overflow-x-auto">
+						<TabsList className="grid grid-cols-3 md:grid-cols-6">
+							{categories.map((cat) => (
+								<TabsTrigger key={cat} value={cat} className="capitalize">
+									{cat}
+								</TabsTrigger>
+							))}
+						</TabsList>
 					</div>
 
-					{/* Main Content */}
-					<div className="w-full lg:w-3/5 flex flex-col flex-grow">
-						{error && (
-							<Alert variant="destructive" className="mb-4">
-								<AlertCircle className="h-4 w-4" />
-								<AlertTitle>Error</AlertTitle>
-								<AlertDescription>{error}</AlertDescription>
-							</Alert>
-						)}
+					{/* Error alert */}
+					{error && (
+						<Alert variant="destructive" className="mb-4">
+							<AlertCircle className="h-4 w-4" />
+							<AlertTitle>Error</AlertTitle>
+							<AlertDescription>{error}</AlertDescription>
+						</Alert>
+					)}
 
-						<Tabs defaultValue="top" value={category} onValueChange={handleCategoryChange} className="flex-grow flex flex-col">
-							<div className="flex justify-center mb-3 overflow-x-auto">
-								<TabsList className="grid grid-cols-3 md:grid-cols-6">
-									{categories.map((cat) => (
-										<TabsTrigger key={cat} value={cat} className="capitalize">
-											{cat}
-										</TabsTrigger>
-									))}
-								</TabsList>
-							</div>
+					{/* Tab content with three columns */}
+					{categories.map((cat) => (
+						<TabsContent key={cat} value={cat} className="mt-0 flex-grow">
+							<div className="flex-grow flex flex-col lg:flex-row gap-4">
+								{/* Left Panel */}
+								<div className="w-full lg:w-1/5 flex flex-grow">
+									<div className="bg-card rounded-lg border shadow-sm p-4 w-full">
+										<h2 className="text-lg font-semibold mb-4">Settings</h2>
 
-							{categories.map((cat) => (
-								<TabsContent key={cat} value={cat} className="mt-0 flex-grow">
+										<div className="space-y-4">
+											<div className="space-y-2">
+												<span className="text-sm font-medium">Country :</span>
+												<CountrySelector value={country} onChange={handleCountryChange} />
+											</div>
+
+											{apiKey && (
+												<div className="space-y-2">
+													<div className="flex justify-between items-center">
+														<span className="text-sm font-medium">API Key:</span>
+														<Button variant="ghost" size="sm" onClick={resetApiKey} className="h-6 px-2">
+															<Key className="h-3 w-3 mr-1" />
+															Change
+														</Button>
+													</div>
+													<div className="text-xs text-muted-foreground">
+														{apiKey.substring(0, 4)}...{apiKey.substring(apiKey.length - 4)}
+													</div>
+												</div>
+											)}
+
+											{quota && (
+												<div className="text-sm space-y-2">
+													<div className="flex justify-between">
+														<span className="font-medium">API Quota:</span>
+														<span>
+															{quota.used}/{quota.used + quota.left}
+														</span>
+													</div>
+													<div className="w-full bg-slate-200 dark:bg-slate-700 rounded-full h-2.5 overflow-hidden">
+														<div
+															className="bg-blue-500 h-2.5 rounded-full"
+															style={{ width: `${Math.round((quota.used / (quota.used + quota.left)) * 100)}%` }}
+														></div>
+													</div>
+												</div>
+											)}
+
+											<div className="flex gap-2">
+												<Button onClick={getNextArticle} className="w-full" disabled={loading || (quota && quota.left <= 0)}>
+													{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+													Next Article
+												</Button>
+												<Button onClick={refreshArticles} variant="outline" className="w-full" disabled={loading || (quota && quota.left <= 0)}>
+													{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+													Refresh Articles
+												</Button>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								{/* Main Content */}
+								<div className="w-full lg:w-3/5 flex flex-col flex-grow">
 									<Card className="h-full">
 										<CardContent className="pt-4">
 											{loading && articlesByCategory[category]?.length === 0 ? (
@@ -211,48 +214,48 @@ function TypingNewsApp() {
 											)}
 										</CardContent>
 									</Card>
-								</TabsContent>
-							))}
-						</Tabs>
-					</div>
-
-					{/* Right Panel */}
-					<div className="w-full lg:w-1/5 flex flex-grow">
-						<div className="bg-card rounded-lg border shadow-sm p-4 w-full">
-							<h2 className="text-lg font-semibold mb-4">Stats</h2>
-
-							<div className="space-y-4">
-								<div className="flex justify-center mb-2">
-									<StreakCounter streak={streak} animated={streakUpdated} />
 								</div>
 
-								<div className="space-y-2">
-									<div className="flex justify-between">
-										<span className="text-sm font-medium">Last Visit:</span>
-										<span className="text-sm">{lastVisit ? new Date(lastVisit).toLocaleDateString() : "Never"}</span>
-									</div>
+								{/* Right Panel */}
+								<div className="w-full lg:w-1/5 flex flex-grow">
+									<div className="bg-card rounded-lg border shadow-sm p-4 w-full">
+										<h2 className="text-lg font-semibold mb-4">Stats</h2>
 
-									<div className="flex justify-between">
-										<span className="text-sm font-medium">Current Category:</span>
-										<span className="text-sm capitalize">{category}</span>
-									</div>
+										<div className="space-y-4">
+											<div className="flex justify-center mb-2">
+												<StreakCounter streak={streak} animated={streakUpdated} />
+											</div>
 
-									<div className="flex justify-between">
-										<span className="text-sm font-medium">Articles Available:</span>
-										<span className="text-sm">{articlesByCategory[category]?.length || 0}</span>
-									</div>
+											<div className="space-y-2">
+												<div className="flex justify-between">
+													<span className="text-sm font-medium">Last Visit:</span>
+													<span className="text-sm">{lastVisit ? new Date(lastVisit).toLocaleDateString() : "Never"}</span>
+												</div>
 
-									<div className="flex justify-between">
-										<span className="text-sm font-medium">Current Article:</span>
-										<span className="text-sm">
-											{currentArticleIndex + 1} of {articlesByCategory[category]?.length || 0}
-										</span>
+												<div className="flex justify-between">
+													<span className="text-sm font-medium">Current Category:</span>
+													<span className="text-sm capitalize">{category}</span>
+												</div>
+
+												<div className="flex justify-between">
+													<span className="text-sm font-medium">Articles Available:</span>
+													<span className="text-sm">{articlesByCategory[category]?.length || 0}</span>
+												</div>
+
+												<div className="flex justify-between">
+													<span className="text-sm font-medium">Current Article:</span>
+													<span className="text-sm">
+														{currentArticleIndex + 1} of {articlesByCategory[category]?.length || 0}
+													</span>
+												</div>
+											</div>
+										</div>
 									</div>
 								</div>
 							</div>
-						</div>
-					</div>
-				</div>
+						</TabsContent>
+					))}
+				</Tabs>
 			</div>
 		</main>
 	);
