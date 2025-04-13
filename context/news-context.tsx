@@ -237,13 +237,24 @@ export const NewsProvider: React.FC<{ children: React.ReactNode }> = ({ children
 		[category, country, articlesByCategory, quota, apiKey, apiKeyError]
 	);
 
+	// Handle category change
+	const handleCategoryChange = useCallback(
+		(newCategory: string) => {
+			setCategory(newCategory);
+			setCurrentArticleIndex(0); // Reset to the first article when changing categories
+
+			// If we don't have articles for this category yet, fetch them
+			if (!articlesByCategory[newCategory] || articlesByCategory[newCategory].length === 0) {
+				setLoading(true); // Set loading state immediately
+			}
+		},
+		[articlesByCategory]
+	);
+
 	// Update the initial fetch effect to only fetch if we don't have articles for this category
 	useEffect(() => {
 		if (apiKey && (!articlesByCategory[category] || articlesByCategory[category].length === 0)) {
 			fetchArticles(true);
-		} else if (apiKey) {
-			// Reset the current article index when changing categories
-			setCurrentArticleIndex(0);
 		}
 	}, [category, country, apiKey, fetchArticles, articlesByCategory]);
 
@@ -287,7 +298,7 @@ export const NewsProvider: React.FC<{ children: React.ReactNode }> = ({ children
 		hasMoreArticles,
 		apiKey,
 		showApiKeyModal,
-		setCategory,
+		setCategory: handleCategoryChange,
 		setCountry,
 		getNextArticle,
 		refreshArticles,
