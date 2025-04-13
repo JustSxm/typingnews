@@ -42,17 +42,18 @@ interface ApiQuota {
 }
 
 export async function GET(request: NextRequest) {
-	// Get category, country, offset, and API key from query parameters
+	// Get category, country, and offset from query parameters
 	const { searchParams } = new URL(request.url);
 	const category = searchParams.get("category") || "top";
 	const country = searchParams.get("country") || "us";
 	const offset = Number.parseInt(searchParams.get("offset") || "0", 10);
-	const apiKey = searchParams.get("apiKey");
 
 	try {
 		// Check if we have an API key
+		const apiKey = process.env.WORLD_NEWS_API_KEY;
+
 		if (!apiKey) {
-			return NextResponse.json({ error: "API key is missing. Please provide your World News API key." }, { status: 400 });
+			return NextResponse.json({ error: "API key is missing. Please set the WORLD_NEWS_API_KEY environment variable." }, { status: 500 });
 		}
 
 		// Determine language based on country
@@ -71,11 +72,6 @@ export async function GET(request: NextRequest) {
 		const response = await fetch(apiUrl, { next: { revalidate: 3600 } }); // Cache for 1 hour
 
 		if (!response.ok) {
-			// Handle specific error cases
-			if (response.status === 401 || response.status === 403) {
-				return NextResponse.json({ error: "Invalid API key. Please check your World News API key and try again." }, { status: 401 });
-			}
-
 			throw new Error(`News API responded with status: ${response.status}`);
 		}
 
