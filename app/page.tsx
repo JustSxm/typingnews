@@ -178,11 +178,11 @@ function TypingNewsApp() {
 
 										<div className="mt-auto pt-4">
 											<div className="flex gap-2">
-												<Button onClick={getNextArticle} className="w-full" disabled={loading || (quota && quota.left <= 0)}>
+												<Button onClick={getNextArticle} className="w-full" disabled={loading || !!(quota && quota.left <= 0)}>
 													{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
 													Next Article
 												</Button>
-												<Button onClick={refreshArticles} variant="outline" className="w-full" disabled={loading || (quota && quota.left <= 0)}>
+												<Button onClick={refreshArticles} variant="outline" className="w-full" disabled={loading || !!(quota && quota.left <= 0)}>
 													{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
 													Refresh Articles
 												</Button>
