@@ -1,3 +1,8 @@
+# A Message from a human
+The only thing here entirely made by a human is this paragraph. Otherwise, the entire project was made by v0, the README by ChatGPT and the fix of linting errors by Copilot. 
+The placeholders in this readme are on purpose. This was just a test for vibe coding : I needed an app to practice my touch typing.
+Enjoy!
+
 # 🧠 Typing News
 
 **Typing News** is a small experimental project where I tried something new: *vibe coding*.  
