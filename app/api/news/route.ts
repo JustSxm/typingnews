@@ -67,8 +67,16 @@ export async function GET(request: NextRequest) {
 			apiUrl = `https://api.worldnewsapi.com/search-news?language=${language}&source-country=${country}&categories=${category}&number=10&offset=${offset}&api-key=${apiKey}`;
 		}
 
-		// Fetch news from WorldNewsAPI
-		const response = await fetch(apiUrl, { next: { revalidate: 3600 } }); // Cache for 1 hour
+		// Create a unique cache key based on the request parameters
+		const cacheTag = `news-${category}-${country}-${offset}`;
+
+		// Fetch news from WorldNewsAPI with proper cache tags
+		const response = await fetch(apiUrl, {
+			next: {
+				revalidate: 3600, // Still cache for an hour, but with proper tags
+				tags: [cacheTag, `news-${category}`, "news-all"],
+			},
+		});
 
 		if (!response.ok) {
 			// Handle specific error cases

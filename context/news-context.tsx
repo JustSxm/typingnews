@@ -139,7 +139,15 @@ export const NewsProvider: React.FC<{ children: React.ReactNode }> = ({ children
 				// Add offset parameter for pagination (except for top news)
 				const currentOffset = reset ? 0 : articlesByCategory[category]?.length || 0;
 				const offsetParam = category !== "top" && !reset ? `&offset=${currentOffset}` : "";
-				const response = await fetch(`/api/news?category=${category}&country=${country}${offsetParam}&apiKey=${apiKey}`);
+
+				// Add a cache-busting parameter to ensure we get fresh data when needed
+				const cacheBuster = reset ? `&_t=${Date.now()}` : "";
+
+				const response = await fetch(
+					`/api/news?category=${category}&country=${country}${offsetParam}${cacheBuster}&apiKey=${apiKey}`,
+					{ cache: reset ? "no-store" : "default" } // Force bypass cache on reset
+				);
+
 				const result = await response.json();
 
 				if (result.error) {
@@ -240,15 +248,32 @@ export const NewsProvider: React.FC<{ children: React.ReactNode }> = ({ children
 	// Handle category change
 	const handleCategoryChange = useCallback(
 		(newCategory: string) => {
-			setCategory(newCategory);
-			setCurrentArticleIndex(0); // Reset to the first article when changing categories
+			// Only proceed if it's actually a different category
+			if (newCategory !== category) {
+				setCategory(newCategory);
+				setCurrentArticleIndex(0); // Reset to the first article when changing categories
 
-			// If we don't have articles for this category yet, fetch them
-			if (!articlesByCategory[newCategory] || articlesByCategory[newCategory].length === 0) {
-				setLoading(true); // Set loading state immediately
+				// If we don't have articles for this category yet, fetch them
+				if (!articlesByCategory[newCategory] || articlesByCategory[newCategory].length === 0) {
+					setLoading(true); // Set loading state immediately
+				}
 			}
 		},
-		[articlesByCategory]
+		[category, articlesByCategory]
+	);
+
+	// Handle country change
+	const handleCountryChange = useCallback(
+		(newCountry: string) => {
+			if (newCountry !== country) {
+				setCountry(newCountry);
+				// Clear all articles when changing country to force a refresh
+				setArticlesByCategory({});
+				setCurrentArticleIndex(0);
+				setLoading(true);
+			}
+		},
+		[country]
 	);
 
 	// Update the initial fetch effect to only fetch if we don't have articles for this category
@@ -299,7 +324,7 @@ export const NewsProvider: React.FC<{ children: React.ReactNode }> = ({ children
 		apiKey,
 		showApiKeyModal,
 		setCategory: handleCategoryChange,
-		setCountry,
+		setCountry: handleCountryChange,
 		getNextArticle,
 		refreshArticles,
 		setApiKey,
